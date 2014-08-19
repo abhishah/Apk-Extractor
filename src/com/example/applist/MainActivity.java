@@ -35,12 +35,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.Toast;
 
 @SuppressLint("NewApi")
 public class MainActivity extends ExpandableListActivity implements
-/* OnItemClickListener, */OnChildClickListener, OnGroupExpandListener {
+/* OnItemClickListener, */OnChildClickListener, OnGroupExpandListener,
+		OnGroupCollapseListener {
 	static PackageManager packagemanager;
 	ExpandableListView apkList;
 	List<PackageInfo> packageList;
@@ -74,6 +76,7 @@ public class MainActivity extends ExpandableListActivity implements
 		// apkList.setOnItemClickListener(this);
 		apkList.setOnChildClickListener(this);
 		apkList.setOnGroupExpandListener(this);
+		apkList.setOnGroupCollapseListener(this);
 		// registerForContextMenu(apkList);
 		// setAdapter(a);
 	}
@@ -119,10 +122,20 @@ public class MainActivity extends ExpandableListActivity implements
 	public void onGroupExpand(int groupPosition) {
 		// TODO Auto-generated method stub
 		if (expand != -1) {
+			// if(apkList.isGroupExpanded(groupPosition))
 			apkList.collapseGroup(expand);
 		}
 		expand = groupPosition;
 		super.onGroupExpand(groupPosition);
+	}
+
+	@Override
+	public void onGroupCollapse(int groupPosition) {
+		// TODO Auto-generated method stub
+		if (expand == groupPosition)
+			expand = -1;
+		super.onGroupCollapse(groupPosition);
+
 	}
 
 	public class Gen extends AsyncTask<String, Integer, String> {

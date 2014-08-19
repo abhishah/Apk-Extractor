@@ -156,7 +156,7 @@ public class ApkAdapter extends BaseExpandableListAdapter {
 		String appName = packagemanager.getApplicationLabel(
 				packageInfo.applicationInfo).toString();
 		Resources r = context.getResources();
-		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 55,
+		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60,
 				r.getDisplayMetrics());
 		int pix = (int) px;
 		appIcon.setBounds(0, 0, pix, pix);
