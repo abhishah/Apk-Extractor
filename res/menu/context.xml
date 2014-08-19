@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/appinfo"
+        android:title="App Info"
+        android:orderInCategory="100"/>
+    <item
+        android:id="@+id/uninstall"
+        android:title="Uninstall app"
+        android:orderInCategory="200"/>
+    <item
+        android:id="@+id/open"
+        android:title="Run app"
+        android:orderInCategory="300"/>
+
+</menu>
