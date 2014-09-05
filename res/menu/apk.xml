@@ -17,11 +17,6 @@
         android:showAsAction="always"
         android:icon="@drawable/apk">
     </item>
-    <item
-        android:id="@+id/exit1"
-        android:orderInCategory="200"
-        android:showAsAction="always"
-        android:icon="@drawable/exit">
-    </item>
+    
 
 </menu>

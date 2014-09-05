@@ -55,32 +55,6 @@ public class ApkAdapter extends BaseExpandableListAdapter {
 		return 0;
 	}
 
-	/*
-	 * public View getView(int position, View convertView, ViewGroup parent) {
-	 * // TODO Auto-generated method stub ViewHolder holder; LayoutInflater
-	 * inflater = context.getLayoutInflater();
-	 * 
-	 * if (convertView == null) { convertView =
-	 * inflater.inflate(R.layout.apklist_item, null); holder = new ViewHolder();
-	 * 
-	 * holder.apkname = (TextView) convertView.findViewById(R.id.appname);
-	 * convertView.setTag(holder); } else { holder = (ViewHolder)
-	 * convertView.getTag(); }
-	 * 
-	 * PackageInfo packageInfo = (PackageInfo) getItem(position); Drawable
-	 * appIcon = packagemanager
-	 * .getApplicationIcon(packageInfo.applicationInfo); String appName =
-	 * packagemanager.getApplicationLabel(
-	 * packageInfo.applicationInfo).toString(); appIcon.setBounds(0, 0, 40, 40);
-	 * holder.apkname.setCompoundDrawables(appIcon, null, null, null);
-	 * holder.apkname.setCompoundDrawablePadding(15);
-	 * holder.apkname.setText(appName);
-	 * 
-	 * return convertView;
-	 * 
-	 * }
-	 */
-
 	@Override
 	public Object getChild(int groupPosition, int childPosition) {
 		// TODO Auto-generated method stub

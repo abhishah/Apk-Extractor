@@ -14,7 +14,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:fadingEdge="horizontal" >
+        android:fadingEdge="horizontal"
+        android:smoothScrollbar="true"
+        android:fastScrollEnabled="true" >
     </ExpandableListView>
 
 </RelativeLayout>

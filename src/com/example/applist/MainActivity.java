@@ -8,14 +8,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -41,9 +44,10 @@ import android.widget.Toast;
 
 @SuppressLint("NewApi")
 public class MainActivity extends ExpandableListActivity implements
-/* OnItemClickListener, */OnChildClickListener, OnGroupExpandListener,
-		OnGroupCollapseListener {
+		OnChildClickListener, OnGroupExpandListener, OnGroupCollapseListener {
 	static PackageManager packagemanager;
+	final String knox = "com.sec.knox.containeragent.USE_CONTAINERAGENT";
+	final String knoxapp = "com.sec.knox.containeragent.USE_KNOX_UI";
 	ExpandableListView apkList;
 	List<PackageInfo> packageList;
 	List<PackageInfo> packageList1;
@@ -51,10 +55,12 @@ public class MainActivity extends ExpandableListActivity implements
 			+ "/MyApps";
 	ApkAdapter a;
 	private static int expand = -1;
+    static boolean exit;
 
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		exit=false;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		ActionBar bar = getActionBar();
@@ -65,14 +71,22 @@ public class MainActivity extends ExpandableListActivity implements
 		packageList1 = new ArrayList<PackageInfo>();
 		for (PackageInfo pi : packageList) {
 			boolean b = isSystemPackage(pi);
+			
+			String[] permission = (pi.requestedPermissions);
 			if (!b) {
-				packageList1.add(pi);
+				// not working
+			/*	if (Arrays.asList(permission).contains("com.sec.knox.containeragent.USE_CONTAINERAGENT")) {
+				} else if (Arrays.asList(permission).contains("com.sec.knox.containeragent.USE_KNOX_UI")) {
+				} else {*/
+					packageList1.add(pi);
+				//}
 			}
 		}
 		sort(packageList1);
 		a = new ApkAdapter(this, packageList1, packagemanager);
 		apkList = (ExpandableListView) findViewById(android.R.id.list);
 		apkList.setAdapter(a);
+
 		// apkList.setOnItemClickListener(this);
 		apkList.setOnChildClickListener(this);
 		apkList.setOnGroupExpandListener(this);
@@ -111,8 +125,7 @@ public class MainActivity extends ExpandableListActivity implements
 			Toast.makeText(getBaseContext(), "File stored in external memory ",
 					Toast.LENGTH_LONG).show();
 			break;
-		case R.id.exit1:
-			finish();
+
 		}
 
 		return super.onMenuItemSelected(featureId, item);
@@ -347,4 +360,36 @@ public class MainActivity extends ExpandableListActivity implements
 			System.out.println(e.getMessage());
 		}
 	}
+
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		final MainActivity acti = this;
+		AlertDialog.Builder a = new AlertDialog.Builder(MainActivity.this);
+		a.setTitle("Exit");
+		a.setMessage("Want to Exit?");
+		a.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				exit = true;
+				acti.finish();
+				dialog.cancel();
+			}
+		});
+		a.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				exit = false;
+				dialog.cancel();
+			}
+
+		});
+		a.show();
+		
+	}
+
 }

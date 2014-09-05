@@ -35,25 +35,22 @@ public final class R {
         public static final int trash=0x7f02000b;
     }
     public static final class id {
-        public static final int action_settings=0x7f080015;
+        public static final int action_settings=0x7f080014;
         public static final int and_version=0x7f08000d;
         public static final int andversion=0x7f08000e;
         public static final int apk=0x7f080001;
-        public static final int appinfo=0x7f080019;
+        public static final int appinfo=0x7f080017;
         public static final int applabel=0x7f080002;
         public static final int appname=0x7f080000;
-        public static final int btext=0x7f080014;
-        public static final int elv1=0x7f080013;
-        public static final int exit=0x7f08001c;
-        public static final int exit1=0x7f080018;
+        public static final int btext=0x7f080013;
         public static final int features=0x7f080007;
-        public static final int genapk=0x7f080017;
-        public static final int genfile=0x7f080016;
+        public static final int genapk=0x7f080016;
+        public static final int genfile=0x7f080015;
         public static final int insdate=0x7f080010;
         public static final int installed=0x7f08000f;
         public static final int last_modify=0x7f080012;
         public static final int modified=0x7f080011;
-        public static final int open=0x7f08001b;
+        public static final int open=0x7f080019;
         public static final int pack_name=0x7f080003;
         public static final int package_name=0x7f080004;
         public static final int path=0x7f08000c;
@@ -61,7 +58,7 @@ public final class R {
         public static final int permissions=0x7f080009;
         public static final int req_feature=0x7f080008;
         public static final int req_permission=0x7f08000a;
-        public static final int uninstall=0x7f08001a;
+        public static final int uninstall=0x7f080018;
         public static final int version=0x7f080005;
         public static final int version_name=0x7f080006;
     }
@@ -69,9 +66,7 @@ public final class R {
         public static final int activity_main=0x7f030000;
         public static final int apklist_item=0x7f030001;
         public static final int appinfo=0x7f030002;
-        public static final int expandlist=0x7f030003;
-        public static final int list_group=0x7f030004;
-        public static final int list_item=0x7f030005;
+        public static final int list_item=0x7f030003;
     }
     public static final class menu {
         public static final int apk=0x7f070000;

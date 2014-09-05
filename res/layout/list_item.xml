@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:orientation="horizontal" 
+    android:alpha="0.8">
 
      <TextView
          android:id="@+id/btext"
@@ -12,6 +13,6 @@
          android:alpha="0.7"
          android:padding="0dp"
          android:text="Extract"
-         android:textSize="14dp" />
+         android:textSize="14sp" />
 
 </LinearLayout>

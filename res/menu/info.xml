@@ -4,9 +4,6 @@
         android:icon="@drawable/open1"
         android:visible="true"
         android:showAsAction="always"/>
-      <item android:id="@+id/exit"
-        android:icon="@drawable/exit"
-        android:visible="true"
-        android:showAsAction="always"/>
+      
 
 </menu>

@@ -31,9 +31,11 @@ public class ApkInfo extends Activity {
 		ActionBar bar=getActionBar();
 		bar.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 		findViewById();
+		
 		AppData appData = (AppData) getApplicationContext();
 		packageInfo = appData.getPackageInfo();
-
+		bar.setTitle(getPackageManager().getApplicationLabel(
+				packageInfo.applicationInfo));
 		setValues();
 	}
 
@@ -60,9 +62,7 @@ public class ApkInfo extends Activity {
 		 * Toast.makeText(getBaseContext(), "Under Construction ",
 		 * Toast.LENGTH_SHORT).show(); break;
 		 */
-		case R.id.exit:
-			finish();
-			break;
+		
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
