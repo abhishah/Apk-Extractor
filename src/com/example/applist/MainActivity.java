@@ -34,6 +34,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView.MultiChoiceModeListener;
@@ -68,7 +69,7 @@ public class MainActivity extends ExpandableListActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		ActionBar bar = getActionBar();
-		bar.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+		bar.setSplitBackgroundDrawable(new ColorDrawable(Color.rgb( 0, 0, 0)));
 		packagemanager = getPackageManager();
 		packageList = packagemanager
 				.getInstalledPackages(PackageManager.GET_PERMISSIONS);
@@ -294,7 +295,9 @@ public class MainActivity extends ExpandableListActivity implements
 				startActivity(i);
 			} catch (NameNotFoundException e) {
 				// TODO Auto-generated catch block
-				Toast.makeText(getBaseContext(), "Its a secured app couldnot be opened", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getBaseContext(),
+						"Its a secured app couldnot be opened",
+						Toast.LENGTH_SHORT).show();
 				e.printStackTrace();
 			}
 
@@ -427,9 +430,10 @@ public class MainActivity extends ExpandableListActivity implements
 						.getItemAtPosition(index));
 				expandableListView.setItemChecked(index, false);
 			}
-			//Log.v("selected item:", expandableListView.getItemAtPosition(index)
-				//	.toString()
-					//+ expandableListView.getChildAt(index).toString());
+			// Log.v("selected item:",
+			// expandableListView.getItemAtPosition(index)
+			// .toString()
+			// + expandableListView.getChildAt(index).toString());
 		}
 		return actionModeEnabled;
 	}
@@ -441,9 +445,10 @@ public class MainActivity extends ExpandableListActivity implements
 			actionMode.setSubtitle("1 item selected");
 			int index = apkList.getFlatListPosition(ExpandableListView
 					.getPackedPositionForGroup(position));
-			//Log.v("selected item:", apkList.getItemAtPosition(index).getClass()
-				//	.toString()
-					//+ "   " + apkList.getChildAt(index).toString());
+			// Log.v("selected item:",
+			// apkList.getItemAtPosition(index).getClass()
+			// .toString()
+			// + "   " + apkList.getChildAt(index).toString());
 			selected.add((PackageInfo) apkList.getItemAtPosition(index));
 		} else
 			actionMode.setSubtitle(apkList.getCheckedItemCount()
@@ -455,14 +460,18 @@ public class MainActivity extends ExpandableListActivity implements
 			android.view.Menu menu) {
 		actionModeEnabled = true;
 		actionMode.setTitle("Select Items");
-		//Toast.makeText(getBaseContext(), "onCreateActionMode called",Toast.LENGTH_SHORT).show();
+		MenuInflater inflater = actionMode.getMenuInflater();
+		inflater.inflate(R.menu.actionmode, menu);
+		// Toast.makeText(getBaseContext(),
+		// "onCreateActionMode called",Toast.LENGTH_SHORT).show();
 		return true;
 	}
 
 	@Override
 	public boolean onPrepareActionMode(ActionMode actionMode,
 			android.view.Menu menu) {
-		//Toast.makeText(getBaseContext(), "onPrepareActionMode called",Toast.LENGTH_SHORT).show();
+		// Toast.makeText(getBaseContext(),
+		// "onPrepareActionMode called",Toast.LENGTH_SHORT).show();
 		return true;
 	}
 
@@ -470,22 +479,38 @@ public class MainActivity extends ExpandableListActivity implements
 	public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
 		// <PackageInfo> selected=new ArrayList<PackageInfo>();
 		// SparseBooleanArray selection=apkList.getCheckedItemPositions();
-		//Toast.makeText(getBaseContext(), "onActionItemClicked called",Toast.LENGTH_SHORT).show();
-		
+
+		switch (menuItem.getItemId()) {
+		case R.id.extractmulti: {
+			Toast.makeText(getBaseContext(), "onActionItemClicked called",
+					Toast.LENGTH_SHORT).show();
+			if (actionMode.getTitle().equals("Select Items")) {
+				Thread extract = new Thread(new Runnable() {
+					public void run() {
+						for (PackageInfo info : selected) {
+							extractapk(info);
+						}
+					};
+				});
+				extract.start();
+				Toast.makeText(getBaseContext(), "Apk generated",
+						Toast.LENGTH_SHORT).show();
+			}
+			break;
+		}
+		}
 		return true;
 	}
 
 	@Override
 	public void onDestroyActionMode(ActionMode actionMode) {
-		Thread extract=new Thread(new Runnable(){
-			public void run(){
-		
-		for (PackageInfo info : selected) {
-			extractapk(info);
-		}};
-		});
-		extract.start();
-		Toast.makeText(getBaseContext(), "Apk generated", Toast.LENGTH_SHORT).show();
+		/*
+		 * Thread extract=new Thread(new Runnable(){ public void run(){
+		 * 
+		 * for (PackageInfo info : selected) { extractapk(info); }}; });
+		 * extract.start(); Toast.makeText(getBaseContext(), "Apk generated",
+		 * Toast.LENGTH_SHORT).show();
+		 */
 		actionModeEnabled = false;
 	}
 

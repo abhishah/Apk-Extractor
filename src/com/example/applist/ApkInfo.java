@@ -30,11 +30,13 @@ public class ApkInfo extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.appinfo);
 		ActionBar bar = getActionBar();
-		bar.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+		bar.setBackgroundDrawable(new ColorDrawable(Color.rgb( 0, 0, 0)));
+		bar.setDisplayHomeAsUpEnabled(true);
 		findViewById();
 
 		AppData appData = (AppData) getApplicationContext();
 		packageInfo = appData.getPackageInfo();
+		bar.setIcon(getPackageManager().getApplicationIcon(packageInfo.applicationInfo));
 		bar.setTitle(getPackageManager().getApplicationLabel(
 				packageInfo.applicationInfo));
 		setValues();
