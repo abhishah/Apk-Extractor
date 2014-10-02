@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -33,34 +32,39 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ExpandableListView.OnGroupCollapseListener;
 import android.widget.ExpandableListView.OnGroupExpandListener;
 import android.widget.Toast;
 
 @SuppressLint("NewApi")
 public class MainActivity extends ExpandableListActivity implements
-		OnChildClickListener, OnGroupExpandListener, OnGroupCollapseListener {
+		OnChildClickListener, OnGroupExpandListener, OnGroupCollapseListener,
+		OnGroupClickListener, MultiChoiceModeListener {
 	static PackageManager packagemanager;
 	final String knox = "com.sec.knox.containeragent.USE_CONTAINERAGENT";
 	final String knoxapp = "com.sec.knox.containeragent.USE_KNOX_UI";
 	ExpandableListView apkList;
 	List<PackageInfo> packageList;
-	List<PackageInfo> packageList1;
+	List<PackageInfo> packageList1, selected;
 	String path = Environment.getExternalStorageDirectory().toString()
 			+ "/MyApps";
 	ApkAdapter a;
 	private static int expand = -1;
-    static boolean exit;
+	static boolean exit;
+	boolean actionModeEnabled = false;
 
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		exit=false;
+		exit = false;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		ActionBar bar = getActionBar();
@@ -71,26 +75,36 @@ public class MainActivity extends ExpandableListActivity implements
 		packageList1 = new ArrayList<PackageInfo>();
 		for (PackageInfo pi : packageList) {
 			boolean b = isSystemPackage(pi);
-			
+
+			@SuppressWarnings("unused")
 			String[] permission = (pi.requestedPermissions);
 			if (!b) {
-				// not working
-			/*	if (Arrays.asList(permission).contains("com.sec.knox.containeragent.USE_CONTAINERAGENT")) {
-				} else if (Arrays.asList(permission).contains("com.sec.knox.containeragent.USE_KNOX_UI")) {
-				} else {*/
+				try {// not working
+					/*
+					 * if (Arrays.asList(permission).contains(
+					 * "com.sec.knox.containeragent.USE_CONTAINERAGENT")) {
+					 * continue;} else if (Arrays.asList(permission).contains(
+					 * "com.sec.knox.containeragent.USE_KNOX_UI")) { continue;}
+					 * else {
+					 */
 					packageList1.add(pi);
-				//}
+					// }
+				} catch (Exception e) {
+				}
 			}
 		}
 		sort(packageList1);
 		a = new ApkAdapter(this, packageList1, packagemanager);
 		apkList = (ExpandableListView) findViewById(android.R.id.list);
 		apkList.setAdapter(a);
+		apkList.setChoiceMode(ExpandableListView.CHOICE_MODE_MULTIPLE_MODAL);
 
 		// apkList.setOnItemClickListener(this);
 		apkList.setOnChildClickListener(this);
 		apkList.setOnGroupExpandListener(this);
 		apkList.setOnGroupCollapseListener(this);
+		apkList.setOnGroupClickListener(this);
+		apkList.setMultiChoiceModeListener(this);
 		// registerForContextMenu(apkList);
 		// setAdapter(a);
 	}
@@ -113,7 +127,7 @@ public class MainActivity extends ExpandableListActivity implements
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.genapk:
-			new Gen().execute("data");
+			new Gen().execute(packageList1);
 			break;
 		case R.id.action_settings:
 			Toast.makeText(getBaseContext(), path, Toast.LENGTH_LONG).show();
@@ -151,7 +165,8 @@ public class MainActivity extends ExpandableListActivity implements
 
 	}
 
-	public class Gen extends AsyncTask<String, Integer, String> {
+	@SuppressWarnings("rawtypes")
+	public class Gen extends AsyncTask<List, Integer, String> {
 
 		ProgressDialog dialog;
 
@@ -165,16 +180,17 @@ public class MainActivity extends ExpandableListActivity implements
 		}
 
 		@Override
-		protected String doInBackground(String... arg0) {
+		protected String doInBackground(List... arg) {
 			// TODO Auto-generated method stub
 
 			// TODO Auto-generated method stub
 			final Intent main = new Intent(Intent.ACTION_MAIN, null);
 			main.addCategory(Intent.CATEGORY_LAUNCHER);
-			@SuppressWarnings("rawtypes")
+
 			final List packagelist = getPackageManager().queryIntentActivities(
 					main, 0);
-			int z = packageList.size();
+			// final List packagelist = arg[0];
+			int z = packagelist.size();
 			double b = 100 / z;
 			for (final Object object : packagelist) {
 				publishProgress((int) b);
@@ -278,6 +294,7 @@ public class MainActivity extends ExpandableListActivity implements
 				startActivity(i);
 			} catch (NameNotFoundException e) {
 				// TODO Auto-generated catch block
+				Toast.makeText(getBaseContext(), "Its a secured app couldnot be opened", Toast.LENGTH_SHORT).show();
 				e.printStackTrace();
 			}
 
@@ -389,7 +406,87 @@ public class MainActivity extends ExpandableListActivity implements
 
 		});
 		a.show();
+	}
+
+	@Override
+	public boolean onGroupClick(ExpandableListView expandableListView,
+			View view, int i, long l) {
+		// TODO Auto-generated method stub
+		if (actionModeEnabled) {
+			expandableListView.setItemChecked(i,
+					!expandableListView.isItemChecked(i));
+			int index = expandableListView
+					.getFlatListPosition(ExpandableListView
+							.getPackedPositionForGroup(i));
+			if (expandableListView.isItemChecked(index)) {
+				expandableListView.setItemChecked(index, true);
+				selected.add((PackageInfo) expandableListView
+						.getItemAtPosition(index));
+			} else {
+				selected.remove((PackageInfo) expandableListView
+						.getItemAtPosition(index));
+				expandableListView.setItemChecked(index, false);
+			}
+			//Log.v("selected item:", expandableListView.getItemAtPosition(index)
+				//	.toString()
+					//+ expandableListView.getChildAt(index).toString());
+		}
+		return actionModeEnabled;
+	}
+
+	public void onItemCheckedStateChanged(ActionMode actionMode, int position,
+			long id, boolean checked) {
+		if (apkList.getCheckedItemCount() == 1) {
+			selected = new ArrayList<PackageInfo>();
+			actionMode.setSubtitle("1 item selected");
+			int index = apkList.getFlatListPosition(ExpandableListView
+					.getPackedPositionForGroup(position));
+			//Log.v("selected item:", apkList.getItemAtPosition(index).getClass()
+				//	.toString()
+					//+ "   " + apkList.getChildAt(index).toString());
+			selected.add((PackageInfo) apkList.getItemAtPosition(index));
+		} else
+			actionMode.setSubtitle(apkList.getCheckedItemCount()
+					+ " items selected");
+	}
+
+	@Override
+	public boolean onCreateActionMode(ActionMode actionMode,
+			android.view.Menu menu) {
+		actionModeEnabled = true;
+		actionMode.setTitle("Select Items");
+		//Toast.makeText(getBaseContext(), "onCreateActionMode called",Toast.LENGTH_SHORT).show();
+		return true;
+	}
+
+	@Override
+	public boolean onPrepareActionMode(ActionMode actionMode,
+			android.view.Menu menu) {
+		//Toast.makeText(getBaseContext(), "onPrepareActionMode called",Toast.LENGTH_SHORT).show();
+		return true;
+	}
+
+	@Override
+	public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+		// <PackageInfo> selected=new ArrayList<PackageInfo>();
+		// SparseBooleanArray selection=apkList.getCheckedItemPositions();
+		//Toast.makeText(getBaseContext(), "onActionItemClicked called",Toast.LENGTH_SHORT).show();
 		
+		return true;
+	}
+
+	@Override
+	public void onDestroyActionMode(ActionMode actionMode) {
+		Thread extract=new Thread(new Runnable(){
+			public void run(){
+		
+		for (PackageInfo info : selected) {
+			extractapk(info);
+		}};
+		});
+		extract.start();
+		Toast.makeText(getBaseContext(), "Apk generated", Toast.LENGTH_SHORT).show();
+		actionModeEnabled = false;
 	}
 
 }

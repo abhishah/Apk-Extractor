@@ -16,7 +16,8 @@
         android:layout_centerHorizontal="true"
         android:fadingEdge="horizontal"
         android:smoothScrollbar="true"
-        android:fastScrollEnabled="true" >
+        android:fastScrollEnabled="true"
+         android:listSelector = "@drawable/selector_list" >
     </ExpandableListView>
 
 </RelativeLayout>

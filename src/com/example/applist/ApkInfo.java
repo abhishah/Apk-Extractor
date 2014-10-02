@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 @SuppressLint("NewApi")
 public class ApkInfo extends Activity {
@@ -28,10 +29,10 @@ public class ApkInfo extends Activity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.appinfo);
-		ActionBar bar=getActionBar();
+		ActionBar bar = getActionBar();
 		bar.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 		findViewById();
-		
+
 		AppData appData = (AppData) getApplicationContext();
 		packageInfo = appData.getPackageInfo();
 		bar.setTitle(getPackageManager().getApplicationLabel(
@@ -50,9 +51,15 @@ public class ApkInfo extends Activity {
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.open:
-			i = this.getPackageManager().getLaunchIntentForPackage(
-					packageInfo.packageName);
-			startActivity(i);
+			try {
+				i = this.getPackageManager().getLaunchIntentForPackage(
+						packageInfo.packageName);
+				startActivity(i);
+			} catch (Exception e) {
+				Toast.makeText(getBaseContext(),
+						"Its a secured app could not be opened",
+						Toast.LENGTH_LONG).show();
+			}
 			break;
 		/*
 		 * case R.id.extract: String i = this.getExtractPath();
@@ -62,7 +69,7 @@ public class ApkInfo extends Activity {
 		 * Toast.makeText(getBaseContext(), "Under Construction ",
 		 * Toast.LENGTH_SHORT).show(); break;
 		 */
-		
+
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
@@ -149,18 +156,15 @@ public class ApkInfo extends Activity {
 		path = (TextView) findViewById(R.id.path);
 	}
 
-/*	private String getExtractPath() {
-		// TODO Auto-generated method stub
-		return PreferenceManager.getDefaultSharedPreferences(this).getString(
-				"extract_path",
-				new File(Environment.getExternalStorageDirectory(),
-						"ApkExtractor").getAbsolutePath());
-	}
-
-	private void uninstallPackage(String paramResolveInfo) {
-		Uri localUri = Uri.fromParts("package", paramResolveInfo, null);
-		Intent localIntent = new Intent("android.intent.action.DELETE");
-		localIntent.setData(localUri);
-		startActivity(localIntent);
-	}*/
+	/*
+	 * private String getExtractPath() { // TODO Auto-generated method stub
+	 * return PreferenceManager.getDefaultSharedPreferences(this).getString(
+	 * "extract_path", new File(Environment.getExternalStorageDirectory(),
+	 * "ApkExtractor").getAbsolutePath()); }
+	 * 
+	 * private void uninstallPackage(String paramResolveInfo) { Uri localUri =
+	 * Uri.fromParts("package", paramResolveInfo, null); Intent localIntent =
+	 * new Intent("android.intent.action.DELETE");
+	 * localIntent.setData(localUri); startActivity(localIntent); }
+	 */
 }
