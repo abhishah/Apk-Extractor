@@ -4,7 +4,7 @@
         android:title="Open"
         android:icon="@drawable/open"
         android:visible="true"
-        android:showAsAction="always"/>
+        android:showAsAction="always|withText"/>
       
 
 </menu>

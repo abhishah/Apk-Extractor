@@ -8,14 +8,14 @@
     <item
         android:id="@+id/genfile"
         android:orderInCategory="200"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always|withText"
         android:title="Text file"
         android:icon="@drawable/txt">
     </item>
     <item
         android:id="@+id/genapk"
         android:orderInCategory="200"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always|withText"
         android:title="Extract all"
         android:icon="@drawable/extract">
     </item>
