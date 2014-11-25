@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item 
         android:id="@+id/extractmulti"
-        android:title="Extract"/>
-
+        android:title="Extract"
+        android:orderInCategory="2"/>
+    <item 
+        android:id="@+id/multishare"
+        android:title="Share"
+        android:icon="@drawable/share"
+        android:orderInCategory="1"/>"
 </menu>

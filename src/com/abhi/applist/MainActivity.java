@@ -20,6 +20,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -38,6 +39,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.CheckBox;
 import android.widget.ExpandableListView;
@@ -61,7 +63,7 @@ public class MainActivity extends ExpandableListActivity implements
 	public static int NoOfApps = 0;
 	List<Boolean> selection;
 	String path = Environment.getExternalStorageDirectory().toString()
-			+ "/MyApps";
+			+ "/AppAndApks";
 	ApkAdapter a;
 	private static int expand = -1;
 	ActionMode action;
@@ -351,6 +353,25 @@ public class MainActivity extends ExpandableListActivity implements
 			}
 
 		}
+		if (menu.equals("Share")) {
+			try {
+				PackageInfo p = packageList1.get(groupPosition);
+				String location = p.applicationInfo.publicSourceDir;
+				// String location=
+				// Environment.getExternalStorageDirectory().toString()+"/AppAndApks/"+p.packageName.toString()+".apk";
+				Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+				MimeTypeMap type = MimeTypeMap.getSingleton();
+				sharingIntent.setType(type.getMimeTypeFromExtension(MimeTypeMap
+						.getFileExtensionFromUrl(location)));
+				File file = new File(location);
+				Uri uri = Uri.fromFile(file);
+				sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+				sharingIntent.putExtra(Intent.EXTRA_TEXT,
+						p.packageName.toString());
+				startActivity(sharingIntent);
+			} catch (Exception e) {
+			}
+		}
 		return false;
 	}
 
@@ -469,6 +490,8 @@ public class MainActivity extends ExpandableListActivity implements
 		actionMode.setTitle("Select Items");
 		MenuInflater inflater = actionMode.getMenuInflater();
 		inflater.inflate(R.menu.actionmode, menu);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		
 		return true;
 	}
 
@@ -484,6 +507,7 @@ public class MainActivity extends ExpandableListActivity implements
 
 		switch (menuItem.getItemId()) {
 		case R.id.extractmulti: {
+			if(checkedcount()!=0){
 			selected = new ArrayList<PackageInfo>();
 			getList(selected);
 			if (actionMode.getTitle().equals("Select Items")) {
@@ -500,12 +524,49 @@ public class MainActivity extends ExpandableListActivity implements
 						Toast.LENGTH_SHORT).show();
 
 			}
-			break;
+			
+		}}
+		break;
+		case R.id.multishare: {
+			if(checkedcount()!=0){
+			selected = new ArrayList<PackageInfo>();
+			getList(selected);
+			List<String> pathofFile = new ArrayList<String>();
+			if (actionMode.getTitle().equals("Select Items")) {
+				MimeTypeMap type = MimeTypeMap.getSingleton();
+				String typeofdata = (type
+						.getMimeTypeFromExtension(MimeTypeMap
+								.getFileExtensionFromUrl(selected.get(0).applicationInfo.publicSourceDir)));
+				// TODO Auto-generated method stub
+				for (PackageInfo p : selected) {
+					pathofFile.add(p.applicationInfo.publicSourceDir);
+				}
+				MultiShare(pathofFile, typeofdata);
+			}
+			uncheck();
+		}}
 		}
-		}
-		uncheck();
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		actionMode.finish();
 		return true;
+	}
+
+	private void MultiShare(List<String> filestoshare, String datatype) {
+		Intent intent = new Intent();
+		intent.setAction(Intent.ACTION_SEND_MULTIPLE);
+		intent.putExtra(Intent.EXTRA_SUBJECT, "Files to Share");
+		intent.setType(datatype); /* This example is sharing jpeg images. */
+
+		ArrayList<Uri> files = new ArrayList<Uri>();
+
+		for (String path : filestoshare /* List of the files you want to send */) {
+			File file = new File(path);
+			Uri uri = Uri.fromFile(file);
+			files.add(uri);
+		}
+
+		intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, files);
+		startActivity(intent);
 	}
 
 	private void getList(List<PackageInfo> selec) {
@@ -524,6 +585,7 @@ public class MainActivity extends ExpandableListActivity implements
 		uncheck();
 		setVisibility(false);
 		actionMode.invalidate();
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 	}
 
 	public void setVisibility(Boolean visible) {

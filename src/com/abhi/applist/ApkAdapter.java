@@ -49,6 +49,7 @@ public class ApkAdapter extends BaseExpandableListAdapter {
 		a.add("Extract");
 		a.add("AppInfo");
 		a.add("Open");
+		a.add("Share");
 	}
 
 	public void checkable(boolean visible) {
@@ -110,7 +111,7 @@ public class ApkAdapter extends BaseExpandableListAdapter {
 	@Override
 	public int getChildrenCount(int groupPosition) {
 		// TODO Auto-generated method stub
-		return 3;
+		return 4;
 	}
 
 	@Override
