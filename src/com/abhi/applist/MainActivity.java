@@ -18,7 +18,6 @@ import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -129,11 +128,8 @@ public class MainActivity extends ExpandableListActivity implements
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.genapk:
-			boolean generate = MakeWarning();
+			MakeWarning();
 			// if (response)new Gen().execute(packageList1);
-			break;
-		case R.id.action_settings:
-			Toast.makeText(getBaseContext(), path, Toast.LENGTH_LONG).show();
 			break;
 		case R.id.genfile:
 			WriteData wd = new WriteData();
@@ -233,7 +229,6 @@ public class MainActivity extends ExpandableListActivity implements
 			List packagelist = getPackageManager().queryIntentActivities(main,
 					0);
 			dialog.setMax(MainActivity.NoOfApps);
-			int z = packagelist.size();
 
 			// Pair a =new Pair(1,((ResolveInfo)
 			// object).loadLabel(getPackageManager()).toString());
@@ -323,8 +318,9 @@ public class MainActivity extends ExpandableListActivity implements
 		String menu = ApkAdapter.a.get(childPosition);
 		if (menu.equals("Extract")) {
 			PackageInfo p = packageList1.get(groupPosition);
-			extractapk(p);
-			Toast.makeText(getBaseContext(), "Apk generated",
+			String pathsingle = extractapk(p);
+			Toast.makeText(getBaseContext(),
+					"Apk extracted in location " + pathsingle,
 					Toast.LENGTH_SHORT).show();
 		}
 		if (menu.equals("AppInfo")) {
@@ -368,7 +364,8 @@ public class MainActivity extends ExpandableListActivity implements
 				sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
 				sharingIntent.putExtra(Intent.EXTRA_TEXT,
 						p.packageName.toString());
-				startActivity(sharingIntent);
+				startActivity(Intent
+						.createChooser(sharingIntent, "Share using"));
 			} catch (Exception e) {
 			}
 		}
@@ -415,16 +412,20 @@ public class MainActivity extends ExpandableListActivity implements
 		}
 	}
 
-	public void extractapk(PackageInfo i) {
+	public String extractapk(PackageInfo i) {
 		File f = new File(i.applicationInfo.publicSourceDir);
+
+		String filename = i.packageName.toString();
+		Log.d("file_name--", "" + filename);
+		File f2;
+		String path1 = Environment.getExternalStorageDirectory().toString()
+				+ "/AppAndApks";
 		try {
-			String filename = i.packageName.toString();
-			Log.d("file_name--", "" + filename);
-			File f2;
 			String info = Environment.getExternalStorageState();
 			if (info.equals(Environment.MEDIA_MOUNTED)) {
 				f2 = new File(Environment.getExternalStorageDirectory()
 						.toString() + "/AppAndApks");
+
 			} else {
 				f2 = getCacheDir();
 			}
@@ -448,9 +449,12 @@ public class MainActivity extends ExpandableListActivity implements
 		} catch (FileNotFoundException ex) {
 			System.out
 					.println(ex.getMessage() + " in the specified directory.");
+			return null;
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
+			return null;
 		}
+		return path1;
 	}
 
 	@Override
@@ -491,7 +495,7 @@ public class MainActivity extends ExpandableListActivity implements
 		MenuInflater inflater = actionMode.getMenuInflater();
 		inflater.inflate(R.menu.actionmode, menu);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-		
+
 		return true;
 	}
 
@@ -507,44 +511,46 @@ public class MainActivity extends ExpandableListActivity implements
 
 		switch (menuItem.getItemId()) {
 		case R.id.extractmulti: {
-			if(checkedcount()!=0){
-			selected = new ArrayList<PackageInfo>();
-			getList(selected);
-			if (actionMode.getTitle().equals("Select Items")) {
-				Thread extract = new Thread(new Runnable() {
-					public void run() {
-						for (PackageInfo info : selected) {
-							extractapk(info);
-						}
-					};
-				});
-				extract.start();
-				uncheck();
-				Toast.makeText(getBaseContext(), "Apk generated",
-						Toast.LENGTH_SHORT).show();
+			if (checkedcount() != 0) {
+				selected = new ArrayList<PackageInfo>();
+				getList(selected);
+				if (actionMode.getTitle().equals("Select Items")) {
+					Thread extract = new Thread(new Runnable() {
+						public void run() {
+							for (PackageInfo info : selected) {
+								extractapk(info);
+							}
+						};
+					});
+					extract.start();
+					uncheck();
+					Toast.makeText(getBaseContext(), "Apk generated",
+							Toast.LENGTH_SHORT).show();
+
+				}
 
 			}
-			
-		}}
-		break;
+		}
+			break;
 		case R.id.multishare: {
-			if(checkedcount()!=0){
-			selected = new ArrayList<PackageInfo>();
-			getList(selected);
-			List<String> pathofFile = new ArrayList<String>();
-			if (actionMode.getTitle().equals("Select Items")) {
-				MimeTypeMap type = MimeTypeMap.getSingleton();
-				String typeofdata = (type
-						.getMimeTypeFromExtension(MimeTypeMap
-								.getFileExtensionFromUrl(selected.get(0).applicationInfo.publicSourceDir)));
-				// TODO Auto-generated method stub
-				for (PackageInfo p : selected) {
-					pathofFile.add(p.applicationInfo.publicSourceDir);
+			if (checkedcount() != 0) {
+				selected = new ArrayList<PackageInfo>();
+				getList(selected);
+				List<String> pathofFile = new ArrayList<String>();
+				if (actionMode.getTitle().equals("Select Items")) {
+					MimeTypeMap type = MimeTypeMap.getSingleton();
+					String typeofdata = (type
+							.getMimeTypeFromExtension(MimeTypeMap
+									.getFileExtensionFromUrl(selected.get(0).applicationInfo.publicSourceDir)));
+					// TODO Auto-generated method stub
+					for (PackageInfo p : selected) {
+						pathofFile.add(p.applicationInfo.publicSourceDir);
+					}
+					MultiShare(pathofFile, typeofdata);
 				}
-				MultiShare(pathofFile, typeofdata);
+				uncheck();
 			}
-			uncheck();
-		}}
+		}
 		}
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		actionMode.finish();
@@ -566,7 +572,7 @@ public class MainActivity extends ExpandableListActivity implements
 		}
 
 		intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, files);
-		startActivity(intent);
+		startActivity(Intent.createChooser(intent, "Share using"));
 	}
 
 	private void getList(List<PackageInfo> selec) {

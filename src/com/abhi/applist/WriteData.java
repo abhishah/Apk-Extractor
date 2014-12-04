@@ -19,11 +19,10 @@ public class WriteData extends Activity {
 	static StringBuilder data = new StringBuilder("");
 	static File myfil;
 	static PackageInfo info;
-	
 
 	public void makeFile(final List<PackageInfo> packageList1) { // TODO
-		// Auto-generated method stub packageList = packageList1; 
-		state =Environment.getExternalStorageState();
+		// Auto-generated method stub packageList = packageList1;
+		state = Environment.getExternalStorageState();
 		Thread a = new Thread() {
 			public void run() {
 				Environment.getExternalStorageState();
@@ -61,11 +60,11 @@ public class WriteData extends Activity {
 						Log.v("file created", "true");
 					} catch (IOException e) { //
 						/* TODO Auto-generated catch block */
-								e.printStackTrace();
+						e.printStackTrace();
 					}
 				}
 			}
 		};
 		a.start();
-	}}
-
+	}
+}
