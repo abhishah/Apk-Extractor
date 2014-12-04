@@ -32,6 +32,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -356,20 +357,70 @@ public class MainActivity extends ExpandableListActivity implements
 				// String location=
 				// Environment.getExternalStorageDirectory().toString()+"/AppAndApks/"+p.packageName.toString()+".apk";
 				Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+				sharingIntent.setType("application");
 				MimeTypeMap type = MimeTypeMap.getSingleton();
 				sharingIntent.setType(type.getMimeTypeFromExtension(MimeTypeMap
 						.getFileExtensionFromUrl(location)));
-				File file = new File(location);
+				String path = extractapk(p);
+				path = path + "/" + p.packageName.toString() + ".apk";
+				Bundle extra = new Bundle();
+				extra.putString("1", path);
+				File file = new File(path);
+				file.setReadable(true, false);
 				Uri uri = Uri.fromFile(file);
 				sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
 				sharingIntent.putExtra(Intent.EXTRA_TEXT,
 						p.packageName.toString());
-				startActivity(Intent
-						.createChooser(sharingIntent, "Share using"));
+				startActivityForResult(
+						Intent.createChooser(sharingIntent, "Share using"),
+						groupPosition, null);
 			} catch (Exception e) {
 			}
 		}
 		return false;
+	}
+
+	public void onActivityResult(int requestCode, int resultCode,
+			final Intent data) {
+		Toast.makeText(getApplicationContext(), "onActivityResultCalled",
+				Toast.LENGTH_LONG).show();
+		final int requestcode = requestCode;
+		if (requestCode != -1) {
+			final Handler handler = new Handler();
+			handler.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					// Do something after 5s = 5000ms
+					PackageInfo p = packageList1.get(requestcode);
+					String loc = Environment.getExternalStorageDirectory()
+							.toString()
+							+ "/AppAndApks"
+							+ "/"
+							+ p.packageName.toString() + ".apk";
+					File file = new File(loc);
+					file.delete();
+					Toast.makeText(getApplicationContext(), "file deleted",
+							Toast.LENGTH_LONG).show();
+					if (file.exists()) {
+						try {
+							file.getCanonicalFile().delete();
+							Toast.makeText(getApplicationContext(),
+									"file deleted", Toast.LENGTH_LONG).show();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						if (file.exists()) {
+							getApplicationContext().deleteFile(file.getName());
+							Toast.makeText(getApplicationContext(),
+									"file deleted", Toast.LENGTH_LONG).show();
+						}
+
+					}
+				}
+			}, 10000);
+		}
+
 	}
 
 	private void sort(List<PackageInfo> list) {
@@ -560,6 +611,7 @@ public class MainActivity extends ExpandableListActivity implements
 	private void MultiShare(List<String> filestoshare, String datatype) {
 		Intent intent = new Intent();
 		intent.setAction(Intent.ACTION_SEND_MULTIPLE);
+		intent.setType("application");
 		intent.putExtra(Intent.EXTRA_SUBJECT, "Files to Share");
 		intent.setType(datatype); /* This example is sharing jpeg images. */
 
@@ -567,6 +619,7 @@ public class MainActivity extends ExpandableListActivity implements
 
 		for (String path : filestoshare /* List of the files you want to send */) {
 			File file = new File(path);
+			file.setReadable(true, false);
 			Uri uri = Uri.fromFile(file);
 			files.add(uri);
 		}
