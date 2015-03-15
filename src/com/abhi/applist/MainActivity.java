@@ -15,7 +15,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.ExpandableListActivity;
+import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,7 +32,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -41,22 +40,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.AbsListView.MultiChoiceModeListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CheckBox;
-import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.ExpandableListView.OnGroupClickListener;
-import android.widget.ExpandableListView.OnGroupCollapseListener;
-import android.widget.ExpandableListView.OnGroupExpandListener;
+import android.widget.ListView;
 import android.widget.Toast;
 
 @SuppressLint("NewApi")
-public class MainActivity extends ExpandableListActivity implements
-		OnChildClickListener, OnGroupExpandListener, OnGroupCollapseListener,
-		OnGroupClickListener, MultiChoiceModeListener {
+public class MainActivity extends ListActivity implements
+		 OnItemClickListener,OnItemLongClickListener {
 	static PackageManager packagemanager;
 	final String knox = "com.sec.knox.containeragent.USE_CONTAINERAGENT";
 	final String knoxapp = "com.sec.knox.containeragent.USE_KNOX_UI";
-	ExpandableListView apkList;
+	ListView apkList;
 	List<PackageInfo> packageList;
 	List<PackageInfo> packageList1;
 	static List<PackageInfo> selected;
@@ -64,8 +61,8 @@ public class MainActivity extends ExpandableListActivity implements
 	List<Boolean> selection;
 	String path = Environment.getExternalStorageDirectory().toString()
 			+ "/AppAndApks";
-	ApkAdapter a;
-	private static int expand = -1;
+	Adapter adapter;
+	//private static int expand = -1;
 	ActionMode action;
 	static boolean exit, response;
 	boolean actionModeEnabled = false;
@@ -79,7 +76,7 @@ public class MainActivity extends ExpandableListActivity implements
 		setContentView(R.layout.activity_main);
 		ActionBar bar = getActionBar();
 		selection = new ArrayList<Boolean>();
-		bar.setSplitBackgroundDrawable(new ColorDrawable(Color.rgb(0, 0, 0)));
+		bar.setBackgroundDrawable(new ColorDrawable(Color.rgb(0, 0, 0)));
 		packagemanager = getPackageManager();
 		packageList = packagemanager
 				.getInstalledPackages(PackageManager.GET_PERMISSIONS);
@@ -99,16 +96,14 @@ public class MainActivity extends ExpandableListActivity implements
 			}
 		}
 		sort(packageList1);
-		a = new ApkAdapter(this, packageList1, packagemanager, selection);
-		apkList = (ExpandableListView) findViewById(android.R.id.list);
+		adapter = new Adapter(this, packageList1, packagemanager, selection);
+		apkList = (ListView) findViewById(android.R.id.list);
+		apkList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+		apkList.setAdapter(adapter);
+		apkList.setOnItemClickListener(this);
+		//apkList.setMultiChoiceModeListener(this);
+		apkList.setOnItemLongClickListener(this);
 
-		apkList.setAdapter(a);
-		apkList.setChoiceMode(ExpandableListView.CHOICE_MODE_MULTIPLE_MODAL);
-		apkList.setOnChildClickListener(this);
-		apkList.setOnGroupExpandListener(this);
-		apkList.setOnGroupCollapseListener(this);
-		apkList.setOnGroupClickListener(this);
-		apkList.setMultiChoiceModeListener(this);
 	}
 
 	private boolean isSystemPackage(PackageInfo pi) {
@@ -180,26 +175,6 @@ public class MainActivity extends ExpandableListActivity implements
 				});
 		builder.show();
 		return response;
-	}
-
-	@Override
-	public void onGroupExpand(int groupPosition) {
-		// TODO Auto-generated method stub
-		if (expand != -1) {
-			// if(apkList.isGroupExpanded(groupPosition))
-			apkList.collapseGroup(expand);
-		}
-		expand = groupPosition;
-		super.onGroupExpand(groupPosition);
-	}
-
-	@Override
-	public void onGroupCollapse(int groupPosition) {
-		// TODO Auto-generated method stub
-		if (expand == groupPosition)
-			expand = -1;
-		super.onGroupCollapse(groupPosition);
-
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -311,117 +286,30 @@ public class MainActivity extends ExpandableListActivity implements
 
 	}
 
-	@Override
-	public boolean onChildClick(ExpandableListView parent, View v,
-			int groupPosition, int childPosition, long id) {
-		// TODO Auto-generated method stub
-
-		String menu = ApkAdapter.a.get(childPosition);
-		if (menu.equals("Extract")) {
-			PackageInfo p = packageList1.get(groupPosition);
-			String pathsingle = extractapk(p);
-			Toast.makeText(getBaseContext(),
-					"Apk extracted in location " + pathsingle,
-					Toast.LENGTH_SHORT).show();
-		}
-		if (menu.equals("AppInfo")) {
-			PackageInfo p = packageList1.get(groupPosition);
-			AppData appdata = (AppData) getApplicationContext();
-			appdata.setPackageInfo(p);
-
-			Intent appInfo = new Intent(getApplicationContext(), ApkInfo.class);
-			startActivity(appInfo);
-		}
-		if (menu.equals("Open")) {
-			try {
-				PackageInfo p = packageList1.get(groupPosition);
-				Intent i = packagemanager
-						.getLaunchIntentForPackage(p.packageName);
-				if (i == null)
-					throw new PackageManager.NameNotFoundException();
-				i.addCategory(Intent.CATEGORY_LAUNCHER);
-				startActivity(i);
-			} catch (NameNotFoundException e) {
-				// TODO Auto-generated catch block
-				Toast.makeText(getBaseContext(),
-						"Its a secured app couldnot be opened",
-						Toast.LENGTH_SHORT).show();
-				e.printStackTrace();
-			}
-
-		}
-		if (menu.equals("Share")) {
-			try {
-				PackageInfo p = packageList1.get(groupPosition);
-				String location = p.applicationInfo.publicSourceDir;
-				// String location=
-				// Environment.getExternalStorageDirectory().toString()+"/AppAndApks/"+p.packageName.toString()+".apk";
-				Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-				sharingIntent.setType("application");
-				MimeTypeMap type = MimeTypeMap.getSingleton();
-				sharingIntent.setType(type.getMimeTypeFromExtension(MimeTypeMap
-						.getFileExtensionFromUrl(location)));
-				String path = extractapk(p);
-				path = path + "/" + p.packageName.toString() + ".apk";
-				Bundle extra = new Bundle();
-				extra.putString("1", path);
-				File file = new File(path);
-				file.setReadable(true, false);
-				Uri uri = Uri.fromFile(file);
-				sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
-				sharingIntent.putExtra(Intent.EXTRA_TEXT,
-						p.packageName.toString());
-				startActivityForResult(
-						Intent.createChooser(sharingIntent, "Share using"),
-						groupPosition, null);
-			} catch (Exception e) {
-			}
-		}
-		return false;
-	}
-
-	public void onActivityResult(int requestCode, int resultCode,
-			final Intent data) {
-		Toast.makeText(getApplicationContext(), "onActivityResultCalled",
-				Toast.LENGTH_LONG).show();
-		final int requestcode = requestCode;
-		if (requestCode != -1) {
-			final Handler handler = new Handler();
-			handler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					// Do something after 5s = 5000ms
-					PackageInfo p = packageList1.get(requestcode);
-					String loc = Environment.getExternalStorageDirectory()
-							.toString()
-							+ "/AppAndApks"
-							+ "/"
-							+ p.packageName.toString() + ".apk";
-					File file = new File(loc);
-					file.delete();
-					Toast.makeText(getApplicationContext(), "file deleted",
-							Toast.LENGTH_LONG).show();
-					if (file.exists()) {
-						try {
-							file.getCanonicalFile().delete();
-							Toast.makeText(getApplicationContext(),
-									"file deleted", Toast.LENGTH_LONG).show();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						if (file.exists()) {
-							getApplicationContext().deleteFile(file.getName());
-							Toast.makeText(getApplicationContext(),
-									"file deleted", Toast.LENGTH_LONG).show();
-						}
-
-					}
-				}
-			}, 10000);
-		}
-
-	}
+	/*
+	 * public void onActivityResult(int requestCode, int resultCode, final
+	 * Intent data) { Toast.makeText(getApplicationContext(),
+	 * "onActivityResultCalled", Toast.LENGTH_LONG).show(); final int
+	 * requestcode = requestCode; if (requestCode != -1) { final Handler handler
+	 * = new Handler(); handler.postDelayed(new Runnable() {
+	 * 
+	 * @Override public void run() { // Do something after 5s = 5000ms
+	 * PackageInfo p = packageList1.get(requestcode); String loc =
+	 * Environment.getExternalStorageDirectory() .toString() + "/AppAndApks" +
+	 * "/" + p.packageName.toString() + ".apk"; File file = new File(loc);
+	 * file.delete(); Toast.makeText(getApplicationContext(), "file deleted",
+	 * Toast.LENGTH_LONG).show(); if (file.exists()) { try {
+	 * file.getCanonicalFile().delete(); Toast.makeText(getApplicationContext(),
+	 * "file deleted", Toast.LENGTH_LONG).show(); } catch (IOException e) { //
+	 * TODO Auto-generated catch block e.printStackTrace(); } if (file.exists())
+	 * { getApplicationContext().deleteFile(file.getName());
+	 * Toast.makeText(getApplicationContext(), "file deleted",
+	 * Toast.LENGTH_LONG).show(); }
+	 * 
+	 * } } }, 10000); }
+	 * 
+	 * }
+	 */
 
 	private void sort(List<PackageInfo> list) {
 		if (list.size() > 0) {
@@ -537,7 +425,7 @@ public class MainActivity extends ExpandableListActivity implements
 		});
 		a.show();
 	}
-
+/*
 	@Override
 	public boolean onCreateActionMode(ActionMode actionMode,
 			android.view.Menu menu) {
@@ -546,7 +434,7 @@ public class MainActivity extends ExpandableListActivity implements
 		MenuInflater inflater = actionMode.getMenuInflater();
 		inflater.inflate(R.menu.actionmode, menu);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+		adapter.mCheckStates.clear();
 		return true;
 	}
 
@@ -606,7 +494,7 @@ public class MainActivity extends ExpandableListActivity implements
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		actionMode.finish();
 		return true;
-	}
+	}*/
 
 	private void MultiShare(List<String> filestoshare, String datatype) {
 		Intent intent = new Intent();
@@ -631,24 +519,24 @@ public class MainActivity extends ExpandableListActivity implements
 	private void getList(List<PackageInfo> selec) {
 		// TODO Auto-generated method stub
 		for (int i = 0; i < packageList1.size(); i++) {
-			if (ApkAdapter.mCheckStates.valueAt(i)) {
+			if (adapter.mCheckStates.valueAt(i)) {
 				selec.add(packageList1.get(i));
 			}
 		}
 		return;
 	}
 
-	@Override
+	/*@Override
 	public void onDestroyActionMode(ActionMode actionMode) {
 		actionModeEnabled = false;
 		uncheck();
 		setVisibility(false);
 		actionMode.invalidate();
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-	}
+	}*/
 
 	public void setVisibility(Boolean visible) {
-		List<CheckBox> checkboxs = a.getCheckbox();
+		List<CheckBox> checkboxs = adapter.getCheckbox();
 		if (visible) {
 			for (CheckBox a : checkboxs) {
 				a.setVisibility(View.VISIBLE);
@@ -661,7 +549,7 @@ public class MainActivity extends ExpandableListActivity implements
 	}
 
 	public void uncheck() {
-		List<CheckBox> checkboxs = a.getCheckbox();
+		List<CheckBox> checkboxs = adapter.getCheckbox();
 		for (CheckBox a : checkboxs) {
 			a.setChecked(false);
 		}
@@ -670,40 +558,213 @@ public class MainActivity extends ExpandableListActivity implements
 	public int checkedcount() {
 		int checked = 0;
 		for (int i = 0; i < packageList1.size(); i++) {
-			if (ApkAdapter.mCheckStates.valueAt(i)) {
+			if (adapter.mCheckStates.valueAt(i)) {
 				checked++;
 			}
 		}
 		return checked;
 	}
 
-	@Override
+/*	@Override
 	public void onItemCheckedStateChanged(ActionMode actionmode, int position,
 			long id, boolean checked) {
 		// TODO Auto-generated method stub
-		pack = (GroupPackage) a.getGroupPackage();
+		pack = (GroupPackage) adapter.getGroupPackage();
 		if (apkList.getCheckedItemCount() == 1) {
 			actionmode.setSubtitle("0 item selected");
-			int index = apkList.getFlatListPosition(ExpandableListView
-					.getPackedPositionForGroup(position));
+			int index = position;
 			@SuppressWarnings("unused")
 			int location = pack.packagelist.indexOf((PackageInfo) apkList
 					.getItemAtPosition(index));
 			setVisibility(true);
+			adapter.setChecked((int) index, true);
 			action = actionmode;
+			adapter.notifyDataSetChanged();
 		} else {
 			actionmode.setSubtitle(checkedcount() + " items selected");
 		}
 
 	}
+*/
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+		// TODO Auto-generated method stub
+		if(actionModeEnabled){}else{
+		switch (arg1.getId()) {
+		case (R.id.select):
+			if(action!=null){
+				action.setSubtitle(checkedcount()+" item selected");
+			}
+			break;
+		case (R.id.overflow_in_li):
+			if (arg2 % 100 == 0) {
+				int position = (arg2 - 0) / 100;
+				PackageInfo p = packageList1.get(position);
+				String pathsingle = extractapk(p);
+				Toast.makeText(getBaseContext(),
+						"Apk extracted in location " + pathsingle,
+						Toast.LENGTH_SHORT).show();
+			} else if (arg2 % 100 == 1) {
+				int position = (arg2 - 1) / 100;
+				PackageInfo p = packageList1.get(position);
+				AppData appdata = (AppData) getApplicationContext();
+				appdata.setPackageInfo(p);
+
+				Intent appInfo = new Intent(getApplicationContext(),
+						ApkInfo.class);
+				startActivity(appInfo);
+			} else if (arg2 % 100 == 2) {
+				int position = (arg2 - 2) / 100;
+				try {
+					PackageInfo p = packageList1.get(position);
+					Intent i = packagemanager
+							.getLaunchIntentForPackage(p.packageName);
+					if (i == null)
+						throw new PackageManager.NameNotFoundException();
+					i.addCategory(Intent.CATEGORY_LAUNCHER);
+					startActivity(i);
+				} catch (NameNotFoundException e) {
+					// TODO Auto-generated catch block
+					Toast.makeText(getBaseContext(),
+							"Its a secured app couldnot be opened",
+							Toast.LENGTH_SHORT).show();
+					e.printStackTrace();
+				}
+
+			} else if (arg2 % 100 == 3) {
+				int position = (arg2 - 3) / 100;
+				try {
+					PackageInfo p = packageList1.get(position);
+					String location = p.applicationInfo.publicSourceDir;
+					// String location=
+					// Environment.getExternalStorageDirectory().toString()+"/AppAndApks/"+p.packageName.toString()+".apk";
+					Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+					sharingIntent.setType("application");
+					MimeTypeMap type = MimeTypeMap.getSingleton();
+					sharingIntent.setType(type
+							.getMimeTypeFromExtension(MimeTypeMap
+									.getFileExtensionFromUrl(location)));
+					String path = extractapk(p);
+					path = path + "/" + p.packageName.toString() + ".apk";
+					Bundle extra = new Bundle();
+					extra.putString("1", path);
+					File file = new File(path);
+					file.setReadable(true, false);
+					Uri uri = Uri.fromFile(file);
+					sharingIntent.putExtra(Intent.EXTRA_STREAM, uri);
+					sharingIntent.putExtra(Intent.EXTRA_TEXT,
+							p.packageName.toString());
+					startActivityForResult(
+							Intent.createChooser(sharingIntent, "Share using"),
+							position, null);
+				} catch (Exception e) {
+				}
+			}
+			break;
+		}}
+	}
 
 	@Override
-	public boolean onGroupClick(ExpandableListView parent, View v,
-			int groupPosition, long id) {
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
+			long arg3) {
 		// TODO Auto-generated method stub
-		if (actionModeEnabled) {
-
+		Toast.makeText(getApplicationContext(), "long click called", Toast.LENGTH_LONG).show();
+		pack = (GroupPackage) adapter.getGroupPackage();
+		int index = arg2;
+		@SuppressWarnings("unused")
+		int location = pack.packagelist.indexOf((PackageInfo) apkList
+				.getItemAtPosition(index));
+		setVisibility(true);
+		adapter.setChecked((int) index, true);
+		adapter.notifyDataSetChanged();
+		if(action!=null){
+			return false;
 		}
-		return actionModeEnabled;
+		action = this.startActionMode(mActionModeCallback); 
+             
+        return true; 
 	}
+
+	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback(){
+		@Override
+		public void onDestroyActionMode(ActionMode actionMode) {
+			actionModeEnabled = false;
+			uncheck();
+			action=null;
+			setVisibility(false);
+			actionMode.invalidate();
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		}
+		@Override
+		public boolean onCreateActionMode(ActionMode actionMode,
+				android.view.Menu menu) {
+			actionModeEnabled = true;
+			actionMode.setTitle("Select Items");
+			actionMode.setSubtitle("1 item selected");
+			MenuInflater inflater = actionMode.getMenuInflater();
+			inflater.inflate(R.menu.actionmode, menu);
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			adapter.mCheckStates.clear();
+			return true;
+		}
+
+		@Override
+		public boolean onPrepareActionMode(ActionMode actionMode,
+				android.view.Menu menu) {
+
+			return true;
+		}
+
+		@Override
+		public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+
+			switch (menuItem.getItemId()) {
+			case R.id.extractmulti: {
+				if (checkedcount() != 0) {
+					selected = new ArrayList<PackageInfo>();
+					getList(selected);
+					if (actionMode.getTitle().equals("Select Items")) {
+						Thread extract = new Thread(new Runnable() {
+							public void run() {
+								for (PackageInfo info : selected) {
+									extractapk(info);
+								}
+							};
+						});
+						extract.start();
+						uncheck();
+						Toast.makeText(getBaseContext(), "Apk generated",
+								Toast.LENGTH_SHORT).show();
+
+					}
+
+				}
+			}
+				break;
+			case R.id.multishare: {
+				if (checkedcount() != 0) {
+					selected = new ArrayList<PackageInfo>();
+					getList(selected);
+					List<String> pathofFile = new ArrayList<String>();
+					if (actionMode.getTitle().equals("Select Items")) {
+						MimeTypeMap type = MimeTypeMap.getSingleton();
+						String typeofdata = (type
+								.getMimeTypeFromExtension(MimeTypeMap
+										.getFileExtensionFromUrl(selected.get(0).applicationInfo.publicSourceDir)));
+						// TODO Auto-generated method stub
+						for (PackageInfo p : selected) {
+							pathofFile.add(p.applicationInfo.publicSourceDir);
+						}
+						MultiShare(pathofFile, typeofdata);
+					}
+					uncheck();
+				}
+			}
+			}
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+			actionMode.finish();
+			return true;
+		}
+	};
+
 }

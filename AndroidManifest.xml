@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.abhi.applist"
     android:installLocation="preferExternal"
-    android:versionCode="2"
+    android:versionCode="3"
     android:versionName="2.0" >
 
     <uses-sdk
@@ -23,22 +23,13 @@
        
         <activity
             android:name="com.abhi.applist.MainActivity"
-            android:label="@string/app_name" 
-            android:uiOptions="splitActionBarWhenNarrow">
-            <intent-filter>
+            android:label="@string/app_name" >
+             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-                <meta-data
-                android:name="android.support.UI_OPTIONS"
-                android:value="splitActionBarWhenNarrow" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".SettingsActivity" 
-            android:uiOptions="splitActionBarWhenNarrow">
-        <meta-data
-                android:name="android.support.UI_OPTIONS"
-                android:value="splitActionBarWhenNarrow" /></activity>
+            </intent-filter> </activity>
+        
         <activity
             android:name=".ApkInfo"
             android:label="@string/title_activity_apk_list"

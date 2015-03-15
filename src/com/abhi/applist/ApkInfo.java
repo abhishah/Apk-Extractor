@@ -15,9 +15,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.abhi.applist.R;
 
 @SuppressLint("NewApi")
 public class ApkInfo extends Activity {
@@ -54,18 +51,7 @@ public class ApkInfo extends Activity {
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.open:
-			try {
-				i = this.getPackageManager().getLaunchIntentForPackage(
-						packageInfo.packageName);
-				startActivity(i);
-			} catch (Exception e) {
-				Toast.makeText(getBaseContext(),
-						"Its a secured app could not be opened",
-						Toast.LENGTH_LONG).show();
-			}
-			break;
+
 		/*
 		 * case R.id.extract: String i = this.getExtractPath();
 		 * Toast.makeText(getBaseContext(), i, Toast.LENGTH_SHORT).show();
@@ -75,7 +61,6 @@ public class ApkInfo extends Activity {
 		 * Toast.LENGTH_SHORT).show(); break;
 		 */
 
-		}
 		return super.onMenuItemSelected(featureId, item);
 	}
 
